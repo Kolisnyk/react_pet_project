@@ -1,22 +1,56 @@
 import React from 'react';
+import classNames from 'classnames';
+
+// import style from './styles.scss';
 
 export default class Home extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {
+        error: null,
+        user: null,
+        userName: '',
+      };
 
-  constructor() {
-    super();
-    this.state = { name: "Kitty" };
-    this.clickHandler = this.clickHandler.bind(this);
-  }
+      this.handleChange = this.handleChange.bind(this);
+      this.handleSubmit = this.handleSubmit.bind(this);
+    }
 
-  clickHandler() {
-    this.setState({ name: "Bunny" });
-  }
+    handleChange(event) {
+      this.setState({userName: event.target.userName});
+    }
 
-  render() {
-    return (
-      <h1 onClick={this.clickHandler}>
-        {`Hello ${this.state.name}!`}
-      </h1>
-    );
+    handleSubmit(event) {
+      fetch("https://api.github.com/users/" + this.state.userName)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              user: result.user
+            });
+          },
+          (error) => {
+            this.setState({
+              error
+            });
+          }
+        )
+    }
+
+    render() {
+      const { error, user } = this.state;
+      if (error) {
+        return <div>Error: {error.message}</div>;
+      } else {
+        return (
+          <div className={classNames('form')} id="response">
+            <form onSubmit={this.handleSubmit}>
+                <input type="text" id="username-input" value={this.state.userName} onChange={this.handleChange} />
+              <input type="submit" value="Search" />
+            </form>
+            { user ? <div><pre>{JSON.stringify(user, null, 2) }</pre></div> : null}
+          </div>
+        );
+    }
   }
 }
