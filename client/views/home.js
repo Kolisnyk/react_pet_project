@@ -8,7 +8,7 @@ export default class Home extends React.Component {
       this.state = {
         error: null,
         user: null,
-        userName: '',
+        value: 'GitHub login',
       };
 
       this.handleChange = this.handleChange.bind(this);
@@ -16,20 +16,32 @@ export default class Home extends React.Component {
     }
 
     handleChange(event) {
-      console.log('handleChange', event);
-      console.log('handleChange', this.state.username);
-      this.setState({userName: event.target.userName});
+      this.setState({value: event.target.value});
     }
 
     handleSubmit(event) {
-      console.log('handleSubmit', event);
-      fetch("https://api.github.com/users/Kolisnyk")
+      fetch(`https://api.github.com/users/${this.state.value}`)
         .then(res => res.json())
         .then(
           (result) => {
-            console.log('result', result);
             this.setState({
-              user: result.login
+              user: result
+            });
+          },
+          (error) => {
+            this.setState({
+              error
+            });
+          }
+        )
+      event.preventDefault();
+      if (this.state.value == '') return null;
+      fetch(`https://api.github.com/users/${this.state.value}`)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              user: result
             });
           },
           (error) => {
@@ -48,8 +60,11 @@ export default class Home extends React.Component {
         return (
           <div className={style.response} id="response">
             <form onSubmit={this.handleSubmit}>
-                <input type="text" id="userName" value={this.state.userName} onChange={this.handleChange} />
-              <input type="submit" value="Search" />
+              <label>
+                Get JSON:
+                <textarea value={this.state.value} onChange={this.handleChange} />
+              </label>
+              <input type="submit" value="Submit" />
             </form>
             { user ? <div><pre>{JSON.stringify(user, null, 2) }</pre></div> : null}
           </div>
